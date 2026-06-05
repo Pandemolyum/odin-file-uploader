@@ -45,6 +45,13 @@ model Folder {
   userId           Int?
 }
 
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      String
+  expiresAt DateTime
+}
+
 enum Role {
   USER
   ADMIN
