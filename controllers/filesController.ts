@@ -9,11 +9,10 @@ export async function renderFiles(req: Request, res: Response) {
             where: { id: req.user.id },
             include: { uploads: true },
         });
-        console.log("🚀 ~ renderFiles ~ user:", user);
     }
     res.render("files.ejs", {
         isConnected: isConnected(req),
-        files: user.uploads ?? [],
+        files: user?.uploads ?? [],
     });
 }
 
@@ -32,4 +31,23 @@ export async function uploadFiles(req: Request, res: Response) {
     });
 
     res.redirect(req.body.user_route);
+}
+
+export async function renameFile(req: Request, res: Response) {
+    await prisma.file.update({
+        where: { id: Number(req.params.id) },
+        data: { name: req.body.newName },
+    });
+
+    const backUrl = req.header("Referer") || "/";
+    res.redirect(backUrl);
+}
+
+export async function deleteFile(req: Request, res: Response) {
+    await prisma.file.delete({
+        where: { id: Number(req.params.id) },
+    });
+
+    const backUrl = req.header("Referer") || "/";
+    res.redirect(backUrl);
 }

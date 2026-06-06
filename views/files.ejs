@@ -12,6 +12,7 @@
 
     <h1>Files</h1>
 
+    <% if (isConnected) { %>
     <form action="/files/upload" enctype="multipart/form-data" method="post" id="upload-form">
         <div class="form-group">
             <input type="file" class="form-control-file" name="uploaded_file">
@@ -19,16 +20,36 @@
         </div>
     </form>
 
+    <% if (files.length !== 0) { %>
     <div class="file-list">
         <% files.forEach((file) => { %>
-        <div class="file">
-            <span class="filename"><%= file.name %></span>
+        <div class="file" id="file-<%= file.id %>">
+            <span class="file-display">
+                <span class="filename-text"><%= file.name %></span>
+                <button onclick="toggleRename('<%= file.id %>')">Rename</button>
+            </span>
+
+            <form class="file-edit" style="display:none;" action="/files/<%= file.id %>/rename" method="POST">
+                <input type="text" name="newName" value="<%= file.name %>" required>
+                <button type="submit">Save</button>
+                <button type="button" onclick="toggleRename('<%= file.id %>')">Cancel</button>
+            </form>
+
             <span class="filename"><%= file.size %></span>
             <span class="filename"><%= file.uploadedAt.toLocaleString() %></span>
             <a href="<%= file.link %>"><button class="download">Download</button></a>
+            <a href="/files/<%= file.id %>/delete"><button class="delete">Delete</button></a>
         </div>
         <% }); %>
     </div>
+    <% } else { %>
+    <div class="file-error">No files have been uploaded in this location.</div>
+    <% } %>
+
+    <% } else { %>
+    <div class="file-error"><a href="/login">Login</a> to upload and view files</div>
+    <% } %>
+
 </body>
 
 <script>
@@ -49,6 +70,16 @@
         this.submit();
     });
 
+    function toggleRename(fileId) {
+        const container = document.getElementById(`file-${fileId}`);
+        const display = container.querySelector('.file-display');
+        const edit = container.querySelector('.file-edit');
+
+        // Toggle visibility
+        const isHidden = edit.style.display === 'none';
+        edit.style.display = isHidden ? 'block' : 'none';
+        display.style.display = isHidden ? 'none' : 'block';
+    }
 </script>
 
 </html>
