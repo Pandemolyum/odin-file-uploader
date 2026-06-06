@@ -10,6 +10,7 @@ import { PrismaClient } from "./generated/prisma/client";
 import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 import indexRouter from "./routes/indexRouter";
 import filesRouter from "./routes/filesRouter";
+import foldersRouter from "./routes/foldersRouter";
 
 // Create the express application
 const app: Express = express();
@@ -56,6 +57,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use("/files", filesRouter);
+app.use("/folders", foldersRouter);
 app.use("/", indexRouter);
 
 app.listen(process.env.PORT_NODE, () => {

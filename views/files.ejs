@@ -20,28 +20,66 @@
         </div>
     </form>
 
+    <!-- NEW FOLDER BUTTON -->
+    <div class="create-folder-section" style="margin-bottom: 20px;">
+        <form action="/folders/create" method="POST" id="create-form">
+            <input type="text" name="folderName" placeholder="New folder name" required>
+            <button type="submit">New Folder</button>
+        </form>
+    </div>
+
+    <!-- FILES AND FOLDERS TABLE -->
     <% if (files.length !== 0) { %>
     <table>
         <thead>
             <tr>
-                <th>File Name</th>
+                <th>Name</th>
                 <th>Size</th>
-                <th>Uploaded At</th>
+                <th>Creation Date</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
+            <!-- FOLDERS -->
+            <% folders.forEach((folder) => { %>
+            <tr id="folder-<%= folder.id %>">
+                <td>
+                    <div class="folder-display">
+                        <span class="folder-text"><%= folder.name %></span>
+                        <button onclick="toggleRenameFolder('<%= folder.id %>')">Rename</button>
+                    </div>
+                    <form class="folder-edit" style="display:none;" action="/folders/<%= folder.id %>/rename"
+                        method="POST">
+                        <input type="text" name="newName" value="<%= folder.name %>" required>
+                        <button type="submit">Save</button>
+                        <button type="button" onclick="toggleRenameFolder('<%= folder.id %>')">Cancel</button>
+                    </form>
+                </td>
+                <td>-</td>
+                <td><%= folder.createdAt.toLocaleString() %></td>
+                <td>
+                    <div style="display: flex; gap: 5px;">
+                        <a href="<%= folder.shareLink %>"><button class="download">Copy Share Link</button></a>
+                        <form class="folder-delete" action="/folders/<%= folder.id %>/delete" method="POST">
+                            <button type="submit" class="delete">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            <% }); %>
+
+            <!-- FILES -->
             <% files.forEach((file) => { %>
             <tr id="file-<%= file.id %>">
                 <td>
                     <div class="file-display">
                         <span class="filename-text"><%= file.name %></span>
-                        <button onclick="toggleRename('<%= file.id %>')">Rename</button>
+                        <button onclick="toggleRenameFile('<%= file.id %>')">Rename</button>
                     </div>
                     <form class="file-edit" style="display:none;" action="/files/<%= file.id %>/rename" method="POST">
                         <input type="text" name="newName" value="<%= file.name %>" required>
                         <button type="submit">Save</button>
-                        <button type="button" onclick="toggleRename('<%= file.id %>')">Cancel</button>
+                        <button type="button" onclick="toggleRenameFile('<%= file.id %>')">Cancel</button>
                     </form>
                 </td>
                 <td><%= file.size %></td>
@@ -69,27 +107,42 @@
 </body>
 
 <script>
-    document.getElementById('upload-form').addEventListener('submit', function (e) {
-        e.preventDefault(); // Stop immediate submission
+    const form_names = ["upload-form", "create-form"];
 
-        // Get the current route
-        const currentRoute = window.location.pathname;
+    form_names.forEach((form) => {
+        document.getElementById(form).addEventListener('submit', function (e) {
+            e.preventDefault(); // Stop immediate submission
 
-        // Create a hidden input
-        const routeInput = document.createElement('input');
-        routeInput.type = 'hidden';
-        routeInput.name = 'user_route';
-        routeInput.value = currentRoute;
+            // Get the current route
+            const currentRoute = window.location.pathname;
 
-        // Append to form and submit
-        this.appendChild(routeInput);
-        this.submit();
+            // Create a hidden input
+            const routeInput = document.createElement('input');
+            routeInput.type = 'hidden';
+            routeInput.name = 'user_route';
+            routeInput.value = currentRoute;
+
+            // Append to form and submit
+            this.appendChild(routeInput);
+            this.submit();
+        });
     });
 
-    function toggleRename(fileId) {
+    function toggleRenameFile(fileId) {
         const container = document.getElementById(`file-${fileId}`);
         const display = container.querySelector('.file-display');
         const edit = container.querySelector('.file-edit');
+
+        // Toggle visibility
+        const isHidden = edit.style.display === 'none';
+        edit.style.display = isHidden ? 'block' : 'none';
+        display.style.display = isHidden ? 'none' : 'block';
+    }
+
+    function toggleRenameFolder(folderId) {
+        const container = document.getElementById(`folder-${folderId}`);
+        const display = container.querySelector('.folder-display');
+        const edit = container.querySelector('.folder-edit');
 
         // Toggle visibility
         const isHidden = edit.style.display === 'none';

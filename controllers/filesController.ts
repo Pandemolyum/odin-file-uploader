@@ -1,4 +1,4 @@
-import type { Request, Response, NextFunction } from "express";
+import type { Request, Response } from "express";
 import { isConnected } from "./indexController";
 import { prisma } from "../lib/prisma";
 import { uploadToCloud } from "../config/cloudinary";
@@ -10,12 +10,16 @@ export async function renderFiles(req: Request, res: Response) {
         if (req.user) {
             user = await prisma.user.findUnique({
                 where: { id: req.user.id },
-                include: { uploads: true },
+                include: {
+                    uploads: true,
+                    folders: true,
+                },
             });
         }
         res.render("files.ejs", {
             isConnected: isConnected(req),
             files: user?.uploads ?? [],
+            folders: user?.folders ?? [],
         });
     } catch (error) {
         console.error("Error rendering files:", error);
@@ -59,6 +63,9 @@ export async function uploadFiles(req: Request, res: Response) {
 }
 
 export async function renameFile(req: Request, res: Response) {
+    if (!req.user)
+        return res.status(401).send("Please login before renaming a file.");
+
     try {
         const newName = req.body.newName;
         const fileId = Number(req.params.id);
@@ -100,6 +107,9 @@ export async function renameFile(req: Request, res: Response) {
 }
 
 export async function deleteFile(req: Request, res: Response) {
+    if (!req.user)
+        return res.status(401).send("Please login before deleting a file.");
+
     try {
         // Delete file in database
         const fileData = await prisma.file.delete({
