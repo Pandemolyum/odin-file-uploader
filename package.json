@@ -2,11 +2,11 @@
     "name": "odin-file-uploader",
     "version": "1.0.0",
     "description": "A personal storage service where users can upload files.",
-    "main": "index.js",
+    "main": "app.ts",
     "type": "module",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "dev": "nodemon --env-file=.env app.ts"
+        "dev": "nodemon --env-file=.env --exec tsx app.ts"
     },
     "repository": {
         "type": "git",
@@ -31,6 +31,7 @@
         "express": "^5.2.1",
         "express-session": "^1.19.0",
         "express-validator": "^7.3.2",
+        "multer": "^2.1.1",
         "passport": "^0.7.0",
         "passport-local": "^1.0.0",
         "pg": "^8.21.0"

@@ -8,6 +8,7 @@ import session from "express-session";
 import { PrismaPg } from "@prisma/adapter-pg"; // For other db adapters, see Prisma docs
 import { PrismaClient } from "./generated/prisma/client";
 import { PrismaSessionStore } from "@quixo3/prisma-session-store";
+import indexRouter from "./routes/indexRouter";
 
 // Create the express application
 const app: Express = express();
@@ -23,7 +24,7 @@ app.use(
         cookie: {
             maxAge: 7 * 24 * 60 * 60 * 1000, // ms
         },
-        secret: "a santa at nasa",
+        secret: `${process.env.SECRET}`,
         resave: true,
         saveUninitialized: true,
         store: new PrismaSessionStore(prisma, {
@@ -53,7 +54,7 @@ app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-//TODO
+app.use("/", indexRouter);
 
 app.listen(process.env.PORT_NODE, () => {
     console.log(`Express app listening on port ${process.env.PORT_NODE}...`);

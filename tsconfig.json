@@ -10,7 +10,8 @@
         "module": "ESNext",
         "moduleResolution": "bundler",
         "target": "esnext",
-        "types": [],
+        "types": ["express", "express-session"],
+        "typeRoots": ["./node_modules/@types", "./types"],
         // For nodejs:
         // "lib": ["esnext"],
         // "types": ["node"],
@@ -45,5 +46,9 @@
         // Custom Options
         "esModuleInterop": true,
         "ignoreDeprecations": "6.0"
+    },
+    "include": ["src/**/*", "types/**/*.d.ts"],
+    "ts-node": {
+        "files": true
     }
 }

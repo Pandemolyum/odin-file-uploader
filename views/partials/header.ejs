@@ -1,0 +1,14 @@
+<header>
+    <a href="/" class="logo">File Uploader</a>
+    <nav>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <% if (!isConnected) { %>
+            <li><a href="/login">Login</a></li>
+            <li><a href="/signup">Sign Up</a></li>
+            <% } else { %>
+            <li><a href="/logout">Logout</a></li>
+            <% } %>
+        </ul>
+    </nav>
+</header>
