@@ -29,7 +29,8 @@ export async function uploadFiles(req: Request, res: Response) {
         return res.status(401).send("Please login before uploading.");
 
     try {
-        const urlPath = req.body.user_route;
+        let urlPath = req.body.user_route;
+        urlPath = urlPath.endsWith("/") ? urlPath.slice(0, -1) : urlPath; // Removes trailing slashes
         const folder = `${req.user.id}${urlPath}`;
 
         // Create file in cloud
