@@ -21,30 +21,43 @@
     </form>
 
     <% if (files.length !== 0) { %>
-    <div class="file-list">
-        <% files.forEach((file) => { %>
-        <div class="file" id="file-<%= file.id %>">
-            <span class="file-display">
-                <span class="filename-text"><%= file.name %></span>
-                <button onclick="toggleRename('<%= file.id %>')">Rename</button>
-            </span>
-
-            <form class="file-edit" style="display:none;" action="/files/<%= file.id %>/rename" method="POST">
-                <input type="text" name="newName" value="<%= file.name %>" required>
-                <button type="submit">Save</button>
-                <button type="button" onclick="toggleRename('<%= file.id %>')">Cancel</button>
-            </form>
-
-            <span class="filename"><%= file.size %></span>
-            <span class="filename"><%= file.uploadedAt.toLocaleString() %></span>
-            <a href="<%= file.link %>"><button class="download">Download</button></a>
-
-            <form class="file-delete" action="/files/<%= file.id %>/delete" method="POST">
-                <button type="submit" class="delete">Delete</button>
-            </form>
-        </div>
-        <% }); %>
-    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>File Name</th>
+                <th>Size</th>
+                <th>Uploaded At</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% files.forEach((file) => { %>
+            <tr id="file-<%= file.id %>">
+                <td>
+                    <div class="file-display">
+                        <span class="filename-text"><%= file.name %></span>
+                        <button onclick="toggleRename('<%= file.id %>')">Rename</button>
+                    </div>
+                    <form class="file-edit" style="display:none;" action="/files/<%= file.id %>/rename" method="POST">
+                        <input type="text" name="newName" value="<%= file.name %>" required>
+                        <button type="submit">Save</button>
+                        <button type="button" onclick="toggleRename('<%= file.id %>')">Cancel</button>
+                    </form>
+                </td>
+                <td><%= file.size %></td>
+                <td><%= file.uploadedAt.toLocaleString() %></td>
+                <td>
+                    <div style="display: flex; gap: 5px;">
+                        <a href="<%= file.link %>"><button class="download">Download</button></a>
+                        <form class="file-delete" action="/files/<%= file.id %>/delete" method="POST">
+                            <button type="submit" class="delete">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            <% }); %>
+        </tbody>
+    </table>
     <% } else { %>
     <div class="file-error">No files have been uploaded in this location.</div>
     <% } %>
