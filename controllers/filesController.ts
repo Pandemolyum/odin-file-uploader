@@ -4,22 +4,57 @@ import { prisma } from "../lib/prisma";
 import { uploadToCloud } from "../config/cloudinary";
 import { v2 as cloudinary } from "cloudinary";
 
+// Returns a list of routes from /files to the current folder path
+function getSubPaths(currentPath: string) {
+    if (!currentPath || currentPath === "/") return ["/"];
+
+    const segments = currentPath.split("/").filter(Boolean);
+    const paths = [];
+    let accumulator = "";
+
+    for (const segment of segments) {
+        accumulator += `/${segment}`;
+        paths.push(accumulator);
+    }
+
+    return [segments, paths];
+}
+
 export async function renderFiles(req: Request, res: Response) {
     try {
+        let path = "/files";
+        if (Array.isArray(req.params.path)) {
+            path = `/files/${req.params.path.join("/")}`;
+            path = path.endsWith("/") ? path.slice(0, -1) : path; // Removes trailing slash
+        }
+
         let user = null;
         if (req.user) {
             user = await prisma.user.findUnique({
                 where: { id: req.user.id },
-                include: {
-                    uploads: true,
-                    folders: true,
+                select: {
+                    uploads: {
+                        where: {
+                            path: path,
+                        },
+                    },
+                    folders: {
+                        where: {
+                            path: path,
+                        },
+                    },
                 },
             });
         }
+
+        const [segments, links] = getSubPaths(path);
+
         res.render("files.ejs", {
             isConnected: isConnected(req),
             files: user?.uploads ?? [],
             folders: user?.folders ?? [],
+            segments: segments,
+            paths: links,
         });
     } catch (error) {
         console.error("Error rendering files:", error);
@@ -34,6 +69,10 @@ export async function uploadFiles(req: Request, res: Response) {
 
     try {
         let urlPath = req.body.user_route;
+        console.log(
+            "🚀 ~ uploadFiles ~ req.body.user_route:",
+            req.body.user_route,
+        );
         urlPath = urlPath.endsWith("/") ? urlPath.slice(0, -1) : urlPath; // Removes trailing slashes
         const folder = `${req.user.id}${urlPath}`;
 

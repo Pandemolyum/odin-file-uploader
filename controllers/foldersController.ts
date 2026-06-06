@@ -14,7 +14,7 @@ export async function createFolder(req: Request, res: Response) {
         await prisma.folder.create({
             data: {
                 name: folderName,
-                path: `${urlPath}/${folderName}`,
+                path: urlPath,
                 userId: req.user.id,
             },
         });
@@ -24,11 +24,6 @@ export async function createFolder(req: Request, res: Response) {
         console.error("Upload error:", error);
         res.status(500).send("Failed to create folder record.");
     }
-}
-
-function removeAllAfterLastSlash(str: string) {
-    const lastSlashIndex = str.lastIndexOf("/");
-    return str.substring(0, lastSlashIndex);
 }
 
 export async function renameFolder(req: Request, res: Response) {
@@ -44,12 +39,9 @@ export async function renameFolder(req: Request, res: Response) {
         if (!oldFolder) throw new Error("Could not find folder in database.");
 
         // Rename folder in database and update path
-        const shortPath = removeAllAfterLastSlash(oldFolder.path);
-        const newName = req.body.newName;
-        const newPath = `${shortPath}/${newName}`;
         await prisma.folder.update({
             where: { id: folderId },
-            data: { name: newName, path: newPath },
+            data: { name: req.body.newName },
         });
 
         // Redirects to previous page (before POST)
@@ -72,7 +64,7 @@ export async function deleteFolder(req: Request, res: Response) {
         });
 
         // Redirects to parent of deleted folder
-        res.redirect(removeAllAfterLastSlash(folderData.path));
+        res.redirect(folderData.path);
     } catch (error) {
         console.error("Delete error:", error);
         res.status(500).send("Could not delete folder.");

@@ -28,8 +28,15 @@
         </form>
     </div>
 
+    <!-- CURRENT PATH -->
+    <div class="currentPath">
+        <% paths.forEach((path, i) => { %>
+        <span class="pathLink">/<a class="pathLink" href="<%= path %>"><%= segments[i] %></a></span>
+        <% }); %>
+    </div>
+
     <!-- FILES AND FOLDERS TABLE -->
-    <% if (files.length !== 0) { %>
+    <% if (files.length !== 0 || folders.length !== 0) { %>
     <table>
         <thead>
             <tr>
@@ -45,7 +52,8 @@
             <tr id="folder-<%= folder.id %>">
                 <td>
                     <div class="folder-display">
-                        <span class="folder-text"><%= folder.name %></span>
+                        <a class="folder-link" href="<%= folder.path %>/<%= folder.name %>"><span
+                                class="folder-text"><%= folder.name %></span></a>
                         <button onclick="toggleRenameFolder('<%= folder.id %>')">Rename</button>
                     </div>
                     <form class="folder-edit" style="display:none;" action="/folders/<%= folder.id %>/rename"
