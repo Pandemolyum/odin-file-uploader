@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Files</title>
+</head>
+
+<body>
+    <%- include("partials/header.ejs") %>
+
+    <h1>Files</h1>
+
+    <form action="/files/upload" enctype="multipart/form-data" method="post" id="upload-form">
+        <div class="form-group">
+            <input type="file" class="form-control-file" name="uploaded_file">
+            <input type="submit" value="Upload" class="btn btn-default">
+        </div>
+    </form>
+
+    <div class="file-list">
+        <% files.forEach((file) => { %>
+        <div class="file">
+            <span class="filename"><%= file.name %></span>
+            <span class="filename"><%= file.size %></span>
+            <span class="filename"><%= file.uploadedAt.toLocaleString() %></span>
+            <a href="<%= file.link %>"><button class="download">Download</button></a>
+        </div>
+        <% }); %>
+    </div>
+</body>
+
+<script>
+    document.getElementById('upload-form').addEventListener('submit', function (e) {
+        e.preventDefault(); // Stop immediate submission
+
+        // Get the current route
+        const currentRoute = window.location.pathname;
+
+        // Create a hidden input
+        const routeInput = document.createElement('input');
+        routeInput.type = 'hidden';
+        routeInput.name = 'user_route';
+        routeInput.value = currentRoute;
+
+        // Append to form and submit
+        this.appendChild(routeInput);
+        this.submit();
+    });
+
+</script>
+
+</html>

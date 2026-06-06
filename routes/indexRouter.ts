@@ -13,7 +13,7 @@ const indexRouter = Router();
 indexRouter.get("/", renderHome);
 
 indexRouter.get("/signup", renderSignUpForm);
-indexRouter.post("/signup", ...createUser);
+indexRouter.post("/signup", ...createUser); // ... necessary for TypeScript
 
 indexRouter.get("/login", renderLoginForm);
 indexRouter.post("/login", loginUser);

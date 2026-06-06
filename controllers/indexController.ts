@@ -65,7 +65,7 @@ CONTROLLER FUNCTIONS
 */
 
 // Pass req to this function to determine if a user is connected
-function isConnected(req: Request) {
+export function isConnected(req: Request) {
     if (req.user) {
         return true;
     }
@@ -136,7 +136,7 @@ export function loginUser(req: Request, res: Response, next: NextFunction) {
 
             req.logIn(user, (err) => {
                 if (err) return next(err);
-                return res.redirect("/");
+                return res.redirect("/files");
             });
         },
     )(req, res, next); // Strange usage, but required for authenticate to be executed

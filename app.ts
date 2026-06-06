@@ -9,6 +9,7 @@ import { PrismaPg } from "@prisma/adapter-pg"; // For other db adapters, see Pri
 import { PrismaClient } from "./generated/prisma/client";
 import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 import indexRouter from "./routes/indexRouter";
+import filesRouter from "./routes/filesRouter";
 
 // Create the express application
 const app: Express = express();
@@ -54,6 +55,7 @@ app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
+app.use("/files", filesRouter);
 app.use("/", indexRouter);
 
 app.listen(process.env.PORT_NODE, () => {
