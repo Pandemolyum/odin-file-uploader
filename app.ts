@@ -3,7 +3,7 @@ import type { Express } from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
-import passport from "./config/passport.js";
+import passport from "./config/passport";
 import session from "express-session";
 import { PrismaPg } from "@prisma/adapter-pg"; // For other db adapters, see Prisma docs
 import { PrismaClient } from "./generated/prisma/client";

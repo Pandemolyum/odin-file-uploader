@@ -1,6 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
 import { isConnected } from "./indexController";
 import { prisma } from "../lib/prisma";
+import { uploadToCloud } from "../config/cloudinary";
+import { v2 as cloudinary } from "cloudinary";
 
 export async function renderFiles(req: Request, res: Response) {
     try {
@@ -27,17 +29,28 @@ export async function uploadFiles(req: Request, res: Response) {
         return res.status(401).send("Please login before uploading.");
 
     try {
+        const urlPath = req.body.user_route;
+        const folder = `${req.user.id}${urlPath}`;
+
+        // Create file in cloud
+        const cloudResult = await uploadToCloud(
+            req.file.buffer,
+            req.file.originalname,
+            folder,
+        );
+
+        // Create file in database
         await prisma.file.create({
             data: {
                 name: req.file.originalname,
                 size: req.file.size,
-                path: req.body.user_route,
-                link: "TBD",
+                path: urlPath,
+                link: cloudResult.secure_url,
                 userId: req.user.id,
             },
         });
 
-        res.redirect(req.body.user_route);
+        res.redirect(urlPath);
     } catch (error) {
         console.error("Upload error:", error);
         res.status(500).send("Failed to save file record.");
@@ -46,9 +59,34 @@ export async function uploadFiles(req: Request, res: Response) {
 
 export async function renameFile(req: Request, res: Response) {
     try {
+        const newName = req.body.newName;
+        const fileId = Number(req.params.id);
+
+        // Rename file in cloud
+        const oldFile = await prisma.file.findUnique({ where: { id: fileId } });
+        if (!oldFile) throw new Error("Could not find the file in database.");
+        const oldPublicId = `${oldFile?.userId}${oldFile.path}/${oldFile.name}`;
+        const newPublicId = `${oldFile?.userId}${oldFile.path}/${newName}`;
+        const cloudFile = await cloudinary.uploader
+            .rename(oldPublicId, newPublicId, {
+                resource_type: "raw",
+                invalidate: true,
+            })
+            .then((result) => result)
+            .catch((error) => console.error(error));
+
+        if (!cloudFile) throw new Error("Could not rename file in the cloud.");
+
+        /* At this point, the public ID is updated but the filename
+        // in the cloudinary media library online is not changed. This
+        // is fine and we can still upload files with the same name as
+        // long as the public ID is different.
+        */
+
+        // Rename file in database and update path
         await prisma.file.update({
-            where: { id: Number(req.params.id) },
-            data: { name: req.body.newName },
+            where: { id: fileId },
+            data: { name: newName, link: cloudFile.secure_url },
         });
 
         // Redirects to previous page (before POST)
@@ -62,12 +100,20 @@ export async function renameFile(req: Request, res: Response) {
 
 export async function deleteFile(req: Request, res: Response) {
     try {
-        await prisma.file.delete({
+        // Delete file in database
+        const fileData = await prisma.file.delete({
             where: { id: Number(req.params.id) },
         });
 
-        const backUrl = req.header("Referer") || "/";
-        res.redirect(backUrl);
+        // Delete file in cloud
+        const cloudPath = `${fileData.userId}${fileData.path}/${fileData.name}`;
+        await cloudinary.uploader
+            .destroy(cloudPath, { resource_type: "raw" })
+            .then((result) => console.log(result))
+            .catch((error) => console.error(error));
+
+        // Redirects to previous page (before POST)
+        res.redirect(req.header("Referer") || "/");
     } catch (error) {
         console.error("Delete error:", error);
         res.status(500).send("Could not delete file.");

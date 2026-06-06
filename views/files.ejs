@@ -38,7 +38,10 @@
             <span class="filename"><%= file.size %></span>
             <span class="filename"><%= file.uploadedAt.toLocaleString() %></span>
             <a href="<%= file.link %>"><button class="download">Download</button></a>
-            <a href="/files/<%= file.id %>/delete"><button class="delete">Delete</button></a>
+
+            <form class="file-delete" action="/files/<%= file.id %>/delete" method="POST">
+                <button type="submit" class="delete">Delete</button>
+            </form>
         </div>
         <% }); %>
     </div>
