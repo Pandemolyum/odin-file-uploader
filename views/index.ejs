@@ -10,7 +10,11 @@
 <body>
     <%- include("partials/header.ejs") %>
 
+    <% if (isConnected) { %>
+    <div class="greeting">Welcome!</div>
+    <% } else { %>
     <div class="directions"><a href="/login">Login</a> to upload files or enter a sharing link.</div>
+    <% } %>
 </body>
 
 </html>
