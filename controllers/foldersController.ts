@@ -39,10 +39,16 @@ export async function renameFolder(req: Request, res: Response) {
         if (!oldFolder) throw new Error("Could not find folder in database.");
 
         // Rename folder in database and update path
-        await prisma.folder.update({
+        const newFolder = await prisma.folder.update({
             where: { id: folderId },
             data: { name: req.body.newName },
         });
+
+        // Update file path in database
+        await moveFolderContents(
+            `${oldFolder.path}/${oldFolder.name}`,
+            `${newFolder.path}/${newFolder.name}`,
+        );
 
         // Redirects to previous page (before POST)
         res.redirect(req.header("Referer") || "/");
@@ -68,5 +74,26 @@ export async function deleteFolder(req: Request, res: Response) {
     } catch (error) {
         console.error("Delete error:", error);
         res.status(500).send("Could not delete folder.");
+    }
+}
+
+async function moveFolderContents(
+    oldFolderPath: string,
+    newFolderPath: string,
+) {
+    try {
+        // Change file paths
+        await prisma.file.updateMany({
+            where: { path: oldFolderPath },
+            data: { path: newFolderPath },
+        });
+
+        // Change folder paths
+        await prisma.folder.updateMany({
+            where: { path: oldFolderPath },
+            data: { path: newFolderPath },
+        });
+    } catch (error) {
+        console.error("Move error:", error);
     }
 }
