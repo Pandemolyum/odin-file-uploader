@@ -165,3 +165,100 @@ export async function deleteFile(req: Request, res: Response) {
         res.status(500).send("Could not delete file.");
     }
 }
+
+// Returns a list of routes from the shared folder path to the current path
+function getSharedSubPaths(
+    sharedPath: string,
+    currentPath: string,
+    sharedRoute: string,
+) {
+    currentPath = currentPath.replace(sharedRoute, "");
+
+    const segments = currentPath.split("/").filter(Boolean);
+    const paths = [];
+
+    for (const segment of segments) {
+        sharedRoute += `/${segment}`;
+        paths.push(sharedRoute);
+    }
+
+    return [segments, paths];
+}
+
+export async function renderSharedFiles(req: Request, res: Response) {
+    try {
+        let path = `/files/share/${req.params.uuid}`;
+        if (Array.isArray(req.params.path)) {
+            path = path + `/${req.params.path.join("/")}`;
+            path = path.endsWith("/") ? path.slice(0, -1) : path; // Removes trailing slash
+        }
+
+        // Get shared folder
+        let shareLink = `${req.protocol}://${req.get("host")}/files/share/${req.params.uuid}`;
+        shareLink = shareLink.endsWith("/")
+            ? shareLink.slice(0, -1)
+            : shareLink;
+        const sharedFolder = await prisma.folder.findFirst({
+            where: {
+                shareLink: shareLink,
+            },
+        });
+
+        if (!sharedFolder) {
+            return res.render("sharedFiles.ejs", {
+                isConnected: isConnected(req),
+                shareStatus: "invalid",
+            });
+        }
+        if (
+            sharedFolder?.shareLinkExpDate &&
+            sharedFolder?.shareLinkExpDate < new Date()
+        ) {
+            return res.render("sharedFiles.ejs", {
+                isConnected: isConnected(req),
+                shareStatus: "expired",
+            });
+        }
+
+        // Get files and folders within shared folder
+        let dbPath = `${sharedFolder.path}/${sharedFolder.name}`;
+        if (Array.isArray(req.params.path)) {
+            dbPath = dbPath + `/${req.params.path.join("/")}`;
+        }
+        let folders = await prisma.folder.findMany({
+            where: { path: dbPath },
+        });
+        let files = await prisma.file.findMany({
+            where: { path: dbPath },
+        });
+
+        // Get segments and links for building clickable currentPath
+        // Then, remove links before current folder
+        const paramsPath = req.params.path ? req.params.path : "";
+        const sharedPath = `/files/share/${req.params.uuid}`;
+        const currentPath = `/files/share/${req.params.uuid}/${paramsPath}`;
+        const sharedRoute = "/files/share";
+        const [segments, links] = getSharedSubPaths(
+            sharedPath,
+            currentPath,
+            sharedRoute,
+        );
+        segments[0] = sharedFolder.name;
+
+        // Render page
+        res.render("sharedFiles.ejs", {
+            isConnected: isConnected(req),
+            shareStatus: "valid",
+            files: files ?? [],
+            folders: folders ?? [],
+            segments: segments,
+            paths: links,
+            currentPath: currentPath.endsWith("/")
+                ? currentPath.slice(0, -1)
+                : currentPath,
+        });
+    } catch (error) {
+        console.error("Error rendering files:", error);
+        res.status(500).send("Internal Server Error");
+    }
+}

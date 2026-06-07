@@ -67,7 +67,12 @@
                 <td><%= folder.createdAt.toLocaleString() %></td>
                 <td>
                     <div style="display: flex; gap: 5px;">
-                        <a href="<%= folder.shareLink %>"><button class="download">Copy Share Link</button></a>
+                        <% if (folder.shareLinkExpDate === null || folder.shareLinkExpDate < new Date()) { %>
+                        <a href="/folders/<%= folder.id %>/share"><button class="share">Create Share Link</button></a>
+                        <% } else { %>
+                        <button class="share" onclick="copyToClipboard('<%= folder.shareLink %>')">Copy Share
+                            Link</button>
+                        <% } %>
                         <form class="folder-delete" action="/folders/<%= folder.id %>/delete" method="POST">
                             <button type="submit" class="delete">Delete</button>
                         </form>
@@ -156,6 +161,17 @@
         const isHidden = edit.style.display === 'none';
         edit.style.display = isHidden ? 'block' : 'none';
         display.style.display = isHidden ? 'none' : 'block';
+    }
+
+    function copyToClipboard(copyText) {
+        console.log(copyText);
+        navigator.clipboard.writeText(copyText)
+            .then(() => {
+                alert("Text copied to clipboard: " + copyText);
+            })
+            .catch(err => {
+                console.error("Failed to copy text: ", err);
+            });
     }
 </script>
 

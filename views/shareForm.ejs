@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Folder</title>
+</head>
+
+<body>
+    <%- include("partials/header.ejs") %>
+
+    <h1>Share <span class="folder-name"><%= folder.name %></span></h1>
+    <p><span class="folder-name"><%= folder.name %></span> and all of its contents will be accessible via a generated
+        link.</p>
+
+    <%- include("partials/errors.ejs") %>
+
+    <form action="/folders/<%= folder.id %>/share" method="POST">
+        <div class="form-group">
+            <label for="end_date">Valid Until</label>
+            <input type="date" id="end_date" name="end_date">
+        </div>
+        <button type="submit">Share</button>
+    </form>
+</body>
+
+</html>

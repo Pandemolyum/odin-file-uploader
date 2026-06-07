@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
+import { isConnected } from "./indexController";
 
 export async function createFolder(req: Request, res: Response) {
     if (!req.user)
@@ -96,4 +97,29 @@ async function moveFolderContents(
     } catch (error) {
         console.error("Move error:", error);
     }
+}
+
+export async function renderShareForm(req: Request, res: Response) {
+    const folder = await prisma.folder.findUnique({
+        where: { id: Number(req.params.id) },
+    });
+    res.render("shareForm.ejs", {
+        isConnected: isConnected(req),
+        folder: folder,
+    });
+}
+
+export async function shareFolder(req: Request, res: Response) {
+    const isoDate = new Date(req.body.end_date).toISOString();
+    const shareURL = `${req.protocol}://${req.get("host")}/files/share/${crypto.randomUUID()}`;
+
+    const folder = await prisma.folder.update({
+        where: { id: Number(req.params.id) },
+        data: {
+            shareLink: shareURL,
+            shareLinkExpDate: isoDate,
+        },
+    });
+
+    res.redirect(folder.path);
 }

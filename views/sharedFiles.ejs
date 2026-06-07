@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shared Files</title>
+</head>
+
+<body>
+    <%- include("partials/header.ejs") %>
+
+    <h1>Shared Files</h1>
+
+    <% if (shareStatus === "valid") { %>
+
+    <!-- CURRENT PATH -->
+    <div class="currentPath">
+        <% paths.forEach((path, i) => { %>
+        <span class="pathLink">/<a class="pathLink" href="<%= path %>"><%= segments[i] %></a></span>
+        <% }); %>
+    </div>
+
+    <!-- FILES AND FOLDERS TABLE -->
+    <% if (files.length !== 0 || folders.length !== 0) { %>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Size</th>
+                <th>Creation Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- FOLDERS -->
+            <% folders.forEach((folder) => { %>
+            <tr id="folder-<%= folder.id %>">
+                <td>
+                    <div class="folder-display">
+                        <a class="folder-link" href="<%= currentPath %>/<%= folder.name %>"><span
+                                class="folder-text"><%= folder.name %></span></a>
+                    </div>
+                </td>
+                <td>-</td>
+                <td><%= folder.createdAt.toLocaleString() %></td>
+            </tr>
+            <% }); %>
+
+            <!-- FILES -->
+            <% files.forEach((file) => { %>
+            <tr id="file-<%= file.id %>">
+                <td>
+                    <div class="file-display">
+                        <span class="filename-text"><%= file.name %></span>
+                    </div>
+                </td>
+                <td><%= file.size %></td>
+                <td><%= file.uploadedAt.toLocaleString() %></td>
+                <td>
+                    <div style="display: flex; gap: 5px;">
+                        <a href="<%= file.link %>"><button class="download">Download</button></a>
+                    </div>
+                </td>
+            </tr>
+            <% }); %>
+        </tbody>
+    </table>
+    <% } else { %>
+    <div class="file-error">No files have been uploaded in this location.</div>
+    <% } %>
+
+    <% } else if (shareStatus === "invalid") { %>
+    <div class="file-error">This share link is invalid.</div>
+    <% } else if (shareStatus === "expired") { %>
+    <div class="file-error">This share link has expired.</div>
+    <% } %>
+
+</body>
+
+</html>
