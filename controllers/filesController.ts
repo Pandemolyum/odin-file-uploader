@@ -69,10 +69,6 @@ export async function uploadFiles(req: Request, res: Response) {
 
     try {
         let urlPath = req.body.user_route;
-        console.log(
-            "🚀 ~ uploadFiles ~ req.body.user_route:",
-            req.body.user_route,
-        );
         urlPath = urlPath.endsWith("/") ? urlPath.slice(0, -1) : urlPath; // Removes trailing slashes
         const folder = `${req.user.id}${urlPath}`;
 
