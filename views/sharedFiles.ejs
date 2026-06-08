@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shared Files</title>
+    <link rel="stylesheet" href="/style.css">
 </head>
 
 <body>
@@ -27,7 +28,7 @@
         <thead>
             <tr>
                 <th>Name</th>
-                <th>Size</th>
+                <th>Size (bytes)</th>
                 <th>Creation Date</th>
                 <th>Actions</th>
             </tr>
@@ -42,8 +43,9 @@
                                 class="folder-text"><%= folder.name %></span></a>
                     </div>
                 </td>
-                <td>-</td>
+                <td></td>
                 <td><%= folder.createdAt.toLocaleString() %></td>
+                <td></td>
             </tr>
             <% }); %>
 
